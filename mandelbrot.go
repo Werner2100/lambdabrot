@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"math"
 	"os"
+	"runtime"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 var (
 	colorStep     float64 = 6000
 	xpos, ypos    float64 = -0.00275, 0.78912
-	width, height int     = 2048, 2048
+	width, height int     = 4096, 4096
 	maxIteration  int     = 800
 	escapeRadius  float64 = .125689
 	filename      string  = "mandelbrot.png"
@@ -51,6 +52,7 @@ func HandleRequest() {
 
 func runBrot() {
 	start := time.Now()
+	fmt.Printf("Found %d vCores\n", runtime.NumCPU())
 	defer func() {
 		fmt.Printf("rendering took %v\n", time.Since(start))
 	}()
