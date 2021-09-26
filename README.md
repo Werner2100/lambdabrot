@@ -76,12 +76,12 @@ Furthermore, I don't see any cost advantages of a higher memory setting (and thu
 
 
 
-## Comparison to on premise hardware
+## Comparison to on-premise hardware
 To be able to classify the Lambda performance, I also did a test locally. I calculated a 2048x2048 image on my 2013 Core i3-4010U CPU @ 1.70GHz (8GB RAM) and my Macbook Air M1 (also 8GB RAM). 
-The Lambda comparison value for this is 2.21 sec (2048x2048 - 8GB RAM).
+The Lambda comparison value for this is **2.21 sec** (2048x2048 - 8GB RAM).
 
-Duration Core i3 / 8192MB/ 4 cores / Ubuntu: 3.516 sec
-Duration M1 / 8192MB / 8 cores / macos 11.6: 1.783 sec
+* Duration Core i3 / 8192MB/ 4 cores / Ubuntu: **3.52** sec
+* Duration M1 / 8192MB / 8 cores / macos 11.6: **1.78** sec
 
 Even though this comparison should be taken with a grain of salt, it is interesting to see that an i3 notebook processor from 2013(!) still holds its own in the comparison. I would have expected the performance of Lambda (especially in this very high memory configuration) to be much better. 
 However, I expected that an M1 will beat everyone and everything in this comparison. I admit, I love my M1 macbook :-)
