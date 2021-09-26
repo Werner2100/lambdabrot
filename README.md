@@ -7,24 +7,24 @@ I have been wondering for a long time how the memory setting of a Lambda functio
 
 Anecdotally, however, there should always be at least 2 vCPU available. 
 
-Besides this question, I wanted to know if there is a sweet spot in terms of cost. Since the costs increase according to memory, but the runtime decreases (billing is done in ms), it could be that a certain memory setting minimizes the costs (because the runtime decrease has a stronger effect than the memory increase).
+Besides this question, I wanted to know if there is a sweet spot in terms of cost. Since the costs increase according to memory, but the elapsed time decreases (billing is done in ms), it could be that a certain memory setting minimizes the costs (because the duration decrease has a stronger effect than the memory increase).
 I investigated these two questions empirically in the Frankfurt region using a CPU intensive routine (Mandelbrot in Golang).
 
 ## Setup
 In advance, many thanks to esimov for the Mandelbrot routine (https://github.com/esimov/gobrot ). I have adopted the core of the algorithm.
 The Lambda function computes a Mandelbrot image with given parameters and stores it in the /tmp folder of Lambda. Memory usage is minimal (which is desirable for this test), but CPU usage is extensive. Local testing showed that the algorithm uses the available cores to the max.
 The algorithm generates as many goroutines as the image height - so 1024,2048 or 4096 for example (which I consider a lot) and uses them to calculate the image.
-The code is built pretty straight forward in Go and deployed to Lambda via CLI. In the corresponding Lambda function you can then run the code using a test call and see the runtime and memory usage in Cloudwatch logs.
+The code is built pretty straight forward in Go and deployed to Lambda via CLI. In the corresponding Lambda function you can then run the code using a test call and see the elapsed time and memory usage in Cloudwatch logs.
 
 ## The measurement
-I tested three different image sizes (1024x1024, 2048x2048, 4096x4096) and 9 different memory settings (128/256/384/512/1024/2048/4096/8192/10240 MB). For each measurement 2x3 runs were made (each time with different memory settings so that Lambda was "cold" and „warm effects“ could be excluded). The first run was done in the afternoon of a weekday (9/18/2021), the second at night (I wanted to see if there were any differences). All tests were done in the AWS Frankfurt region (eu-central-1). So each measurement is the average of 6 individual measurements. Per measurement the cost was calculated based on the runtime and the storage setting.
+I tested three different image sizes (1024x1024, 2048x2048, 4096x4096) and 9 different memory settings (128/256/384/512/1024/2048/4096/8192/10240 MB). For each measurement 2x3 runs were made (each time with different memory settings so that Lambda was "cold" and „warm effects“ could be excluded). The first run was done in the afternoon of a weekday (9/18/2021), the second at night (I wanted to see if there were any differences). All tests were done in the AWS Frankfurt region (eu-central-1). So each measurement is the average of 6 individual measurements. Per measurement the cost was calculated based on the elapsed time and the memory setting.
 The cost according to the AWS pricing page is $0.0000166667 for each GB-second.
 
 ## The results
 The following 3 tables show the results in seconds. Cost is for 1 million computed Mandelbrot images (to make the numbers a little bit more readable). 
 
 ### Image size 1024x1024, 1024 'parallel' goroutines
-| Memory/MB        | vCPU           | Runtime/sec  | Cost for 1M images|
+| Memory/MB        | vCPU           | Duration/sec  | Cost for 1M images|
 | -------------:|-------------:| -----:|-----:|
 |   128|     2|     15,84|      33,00$|
 |   256|     2|     8,46|      35,25$|
@@ -38,7 +38,7 @@ The following 3 tables show the results in seconds. Cost is for 1 million comput
 
 
 ### Image size 2048x2048, 2048 'parallel' goroutines
-| Memory/MB        | vCPU           | Runtime/sec  | Cost for 1M images|
+| Memory/MB        | vCPU           | Duration/sec  | Cost for 1M images|
 | -------------:|-------------:| -----:|-----:|
 |   128|     2|     60,75|      126,56$|
 |   256|     2|     30,55|      127,29$|
@@ -51,7 +51,7 @@ The following 3 tables show the results in seconds. Cost is for 1 million comput
 |   10240|    6|    2,05|      341,33$|
 
 ### Image size 4096x4096, 4096 'parallel' goroutines
-| Memory/MB        | vCPU           | Runtime/sec  | Cost for 1M images|
+| Memory/MB        | vCPU           | Duration/sec  | Cost for 1M images|
 | -------------:|-------------:| -----:|-----:|
 |   128|     2|     233,56|      486,58$|
 |   256|     2|     117,22|      488,42$|
@@ -76,12 +76,12 @@ Furthermore, I don't see any cost advantages of a higher memory setting (and thu
 
 
 
-Comparison to on premise hardware
+## Comparison to on premise hardware
 To be able to classify the Lambda performance, I also did a test locally. I calculated a 2048x2048 image on my 2013 Core i3-4010U CPU @ 1.70GHz (8GB RAM) and my Macbook Air M1 (also 8GB RAM). 
 The Lambda comparison value for this is 2.21 sec (2048x2048 - 8GB RAM).
 
-Runtime Core i3 / 8192MB/ 4 cores / Ubuntu: 3.516 sec
-Runtime M1 / 8192MB / 8 cores / macos 11.6: 1.783 sec
+Duration Core i3 / 8192MB/ 4 cores / Ubuntu: 3.516 sec
+Duration M1 / 8192MB / 8 cores / macos 11.6: 1.783 sec
 
 Even though this comparison should be taken with a grain of salt, it is interesting to see that an i3 notebook processor from 2013(!) still holds its own in the comparison. I would have expected the performance of Lambda (especially in this very high memory configuration) to be much better. 
 However, I expected that an M1 will beat everyone and everything in this comparison. I admit, I love my M1 macbook :-)
